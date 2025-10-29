@@ -1,5 +1,5 @@
-#ifndef CDS_HASH_TABLE.H
-#define CDS_HASH_TABLE .H
+#ifndef CDS_HASH_TABLE_H
+#define CDS_HASH_TABLE_H
 
 #include <stddef.h>
 
@@ -43,4 +43,4 @@ int ht_compare_int(const void *key1, const void *key2);
 size_t ht_hash_float(const void *key);
 int ht_compare_float(const void *key1, const void *key2);
 
-#endif
+#endif // CDS_HASH_TABLE_H
