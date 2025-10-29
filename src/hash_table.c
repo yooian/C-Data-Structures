@@ -33,6 +33,16 @@ struct HashTable
     HashTableEntry *entries; // Array of slots
 };
 
+/* PRIVATE FUNCTIONS */
+// Idea: just a workhorse func that searches for key in entry list. Returns pointer to a slot
+static HashTableEntry *ht_find_slot(HashTable *table, const void *key, HashTableEntry **p_first_tombstone)
+{
+    // go through entries
+    // if we're searching, we just look for matching key and return either slot (if found) or NULL/empty
+    // if we're deleting, same thing. In the delete func, we set the status to deleted
+    // if inserting, same thing but we store any passing tombstones. In insert func, we insert into either first tombstone or empty
+}
+
 typedef size_t (*HashFunction)(const void *key);
 typedef int (*CompareFunction)(const void *key1, const void *key2);
 
