@@ -33,4 +33,14 @@ void *ht_search(HashTable *table, const void *key);
  */
 int ht_delete(HashTable *table, const void *key);
 
+/* Convenience Functions */
+size_t ht_hash_string(const void *key);
+int ht_compare_string(const void *key1, const void *key2);
+
+size_t ht_hash_int(const void *key);
+int ht_compare_int(const void *key1, const void *key2);
+
+size_t ht_hash_float(const void *key);
+int ht_compare_float(const void *key1, const void *key2);
+
 #endif
