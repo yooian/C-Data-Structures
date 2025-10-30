@@ -83,7 +83,12 @@ HashTable *ht_create(size_t capacity, HashFunction hash_fn, CompareFunction comp
 }
 
 /** Destroys and frees memory from a hash table */
-void ht_destroy(HashTable *table);
+void ht_destroy(HashTable *table)
+{
+    // expect users to free their own keys/values
+    free(table->entries);
+    free(table);
+}
 
 /**
  * Inserts a key-value pair.
