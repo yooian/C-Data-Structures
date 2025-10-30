@@ -6,7 +6,7 @@ This project is a personal educational exercise to implement common data structu
 * **Robustness:** Implementing full error-checking (NULL guards, allocation failures).
 * **Clarity:** Writing clean, well-commented, and well-structured code.
 
-This is as much a usable library as it is a learning exercise - 
+This is as much a usable library as it is a learning exercise - anyone can use it, and anyone can contribute!
 
 ---
 
