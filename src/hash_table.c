@@ -35,7 +35,7 @@ struct HashTable
 
 /* PRIVATE FUNCTIONS */
 // Idea: just a workhorse func that searches for key in entry list. Returns pointer to a slot
-static HashTableEntry *ht_find_slot(HashTable *table, const void *key, HashTableEntry **p_first_tombstone)
+static HashTableEntry *ht_find_slot(HashTable *table, const void *key, HashTableEntry **first_tombstone)
 {
     size_t hash = table->hash_fn(key);
     // go through entries
@@ -57,8 +57,8 @@ static HashTableEntry *ht_find_slot(HashTable *table, const void *key, HashTable
         else if (entry->state == SLOT_DELETED)
         {
             // if inserting, same thing but we store any passing tombstones. In insert func, we insert into either first tombstone or empty
-            if (p_first_tombstone != NULL && *p_first_tombstone == NULL)
-                *p_first_tombstone = entry;
+            if (first_tombstone != NULL && *first_tombstone == NULL)
+                *first_tombstone = entry;
         }
         else if (entry->state == SLOT_EMPTY)
         {
@@ -99,8 +99,8 @@ void ht_destroy(HashTable *table)
 int ht_insert(HashTable *table, void *key, void *value)
 {
     HashTableEntry *entry;
-    HashTableEntry *p_first_tombstone = NULL;
-    entry = ht_find_slot(table, key, &p_first_tombstone);
+    HashTableEntry *first_tombstone = NULL;
+    entry = ht_find_slot(table, key, &first_tombstone);
     if (entry->state == SLOT_OCCUPIED)
     {
         entry->value = value;
@@ -108,17 +108,14 @@ int ht_insert(HashTable *table, void *key, void *value)
     }
     else if (entry->state == SLOT_EMPTY || entry->state == SLOT_DELETED)
     {
-        if (p_first_tombstone != NULL)
+        HashTableEntry *entry_slot = entry;
+        if (first_tombstone != NULL)
         {
-            p_first_tombstone->state = SLOT_OCCUPIED;
-            p_first_tombstone->key = key;
-            p_first_tombstone->value = value;
-            table->size++;
-            return 0;
+            entry_slot = first_tombstone;
         }
-        entry->state = SLOT_OCCUPIED;
-        entry->key = key;
-        entry->value = value;
+        entry_slot->state = SLOT_OCCUPIED;
+        entry_slot->key = key;
+        entry_slot->value = value;
         table->size++;
         return 0;
     }
