@@ -37,6 +37,10 @@ struct HashTable
 // Idea: just a workhorse func that searches for key in entry list. Returns pointer to a slot
 static HashTableEntry *ht_find_slot(HashTable *table, const void *key, HashTableEntry **first_tombstone)
 {
+    if (table == NULL || key == NULL)
+    {
+        return -1;
+    }
     size_t hash = table->hash_fn(key);
     // go through entries
     for (size_t i = 0; i < table->capacity; ++i)
@@ -70,7 +74,18 @@ static HashTableEntry *ht_find_slot(HashTable *table, const void *key, HashTable
 
 static int ht_resize(HashTable *table, const size_t new_capacity)
 {
+    if (table == NULL)
+    {
+        return -1;
+    }
+
     HashTableEntry *new_entries = calloc(new_capacity, sizeof(HashTableEntry));
+
+    if (new_entries == NULL)
+    {
+        return -1;
+    }
+
     HashTableEntry *old_entries = table->entries;
     size_t *old_capacity = table->capacity;
 
@@ -95,18 +110,36 @@ static int ht_resize(HashTable *table, const size_t new_capacity)
 /** Creates a new empty hash table */
 HashTable *ht_create(size_t capacity, HashFunction hash_fn, CompareFunction comp_fn)
 {
+    if (capacity == 0 || hash_fn == NULL || comp_fn == NULL)
+    {
+        return NULL;
+    }
+
     HashTable *table = malloc(sizeof(HashTable));
+    if (table == NULL)
+    {
+        return NULL;
+    }
     table->capacity = capacity;
     table->hash_fn = hash_fn;
     table->comp_fn = comp_fn;
     table->size = 0;
     table->entries = calloc(capacity, sizeof(HashTableEntry));
+    if (table->entries == NULL)
+    {
+        return NULL;
+    }
+
     return table;
 }
 
 /** Destroys and frees memory from a hash table */
 void ht_destroy(HashTable *table)
 {
+    if (table == NULL)
+    {
+        return;
+    }
     // expect users to free their own keys/values
     free(table->entries);
     free(table);
@@ -119,9 +152,17 @@ void ht_destroy(HashTable *table)
  */
 int ht_insert(HashTable *table, void *key, void *value)
 {
+    if (table == NULL || key == NULL)
+    {
+        return -1;
+    }
+
     if (table->size >= table->capacity * MAX_LOAD_FACTOR)
     {
-        ht_resize(table, table->capacity * 2);
+        if (!ht_resize(table, table->capacity * 2))
+        {
+            return -1;
+        }
     }
 
     HashTableEntry *entry;
@@ -155,6 +196,11 @@ int ht_insert(HashTable *table, void *key, void *value)
  */
 void *ht_search(HashTable *table, const void *key)
 {
+    if (table == NULL || key == NULL)
+    {
+        return NULL;
+    }
+
     HashTableEntry *entry;
     entry = ht_find_slot(table, key, NULL);
 
@@ -171,6 +217,11 @@ void *ht_search(HashTable *table, const void *key)
  */
 int ht_delete(HashTable *table, const void *key)
 {
+    if (table == NULL || key == NULL)
+    {
+        return -1;
+    }
+
     HashTableEntry *entry;
     entry = ht_find_slot(table, key, NULL);
 
