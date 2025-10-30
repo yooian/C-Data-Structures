@@ -140,7 +140,18 @@ void *ht_search(HashTable *table, const void *key)
  * Deletes a key-value pair.
  * Returns 0 on success, non-zero if the key was not found.
  */
-int ht_delete(HashTable *table, const void *key);
+int ht_delete(HashTable *table, const void *key)
+{
+    HashTableEntry *entry;
+    entry = ht_find_slot(table, key, NULL);
+
+    if (entry->state == SLOT_OCCUPIED)
+    {
+        entry->state == SLOT_DELETED;
+        return 0;
+    }
+    return -1;
+}
 
 /* Convenience Functions */
 size_t ht_hash_string(const void *key);
