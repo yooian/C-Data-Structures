@@ -124,7 +124,17 @@ int ht_insert(HashTable *table, void *key, void *value)
  * Searches for a key.
  * Returns the associated value if found, or NULL if not found.
  */
-void *ht_search(HashTable *table, const void *key);
+void *ht_search(HashTable *table, const void *key)
+{
+    HashTableEntry *entry;
+    entry = ht_find_slot(table, key, NULL);
+
+    if (entry != NULL && entry->state == SLOT_OCCUPIED)
+    {
+        return entry->value;
+    }
+    return NULL;
+}
 
 /**
  * Deletes a key-value pair.
