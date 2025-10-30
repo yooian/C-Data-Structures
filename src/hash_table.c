@@ -39,7 +39,7 @@ static HashTableEntry *ht_find_slot(HashTable *table, const void *key, HashTable
 {
     if (table == NULL || key == NULL)
     {
-        return -1;
+        return NULL;
     }
     size_t hash = table->hash_fn(key);
     // go through entries
@@ -87,7 +87,7 @@ static int ht_resize(HashTable *table, const size_t new_capacity)
     }
 
     HashTableEntry *old_entries = table->entries;
-    size_t *old_capacity = table->capacity;
+    size_t old_capacity = table->capacity;
 
     table->entries = new_entries;
     table->capacity = new_capacity;
@@ -98,7 +98,6 @@ static int ht_resize(HashTable *table, const size_t new_capacity)
         if (old_entries[i].state == SLOT_OCCUPIED)
         {
             ht_insert(table, old_entries[i].key, old_entries[i].value);
-            table->size++;
         }
     }
     free(old_entries);
@@ -159,7 +158,7 @@ int ht_insert(HashTable *table, void *key, void *value)
 
     if (table->size >= table->capacity * MAX_LOAD_FACTOR)
     {
-        if (!ht_resize(table, table->capacity * 2))
+        if (ht_resize(table, table->capacity * 2) != 0)
         {
             return -1;
         }
