@@ -71,7 +71,16 @@ typedef size_t (*HashFunction)(const void *key);
 typedef int (*CompareFunction)(const void *key1, const void *key2);
 
 /** Creates a new empty hash table */
-HashTable *ht_create(size_t capacity, HashFunction hash_fn, CompareFunction comp_fn);
+HashTable *ht_create(size_t capacity, HashFunction hash_fn, CompareFunction comp_fn)
+{
+    HashTable *table = malloc(sizeof(HashTable));
+    table->capacity = capacity;
+    table->hash_fn = hash_fn;
+    table->comp_fn = comp_fn;
+    table->size = 0;
+    table->entries = calloc(capacity, sizeof(HashTableEntry));
+    return table;
+}
 
 /** Destroys and frees memory from a hash table */
 void ht_destroy(HashTable *table);
