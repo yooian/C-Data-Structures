@@ -147,6 +147,7 @@ int ht_delete(HashTable *table, const void *key)
     if (entry != NULL && entry->state == SLOT_OCCUPIED)
     {
         entry->state = SLOT_DELETED;
+        table->size--;
         return 0;
     }
     return -1;
