@@ -154,11 +154,35 @@ int ht_delete(HashTable *table, const void *key)
 }
 
 /* Convenience Functions */
-size_t ht_hash_string(const void *key);
-int ht_compare_string(const void *key1, const void *key2);
+size_t ht_hash_string(const void *key)
+{
+    // djb2 hash alg
+    unsigned long hash = 5381;
+    int c;
+    const unsigned char *str = (const unsigned char *)key;
+    while (c = *str++)
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
-size_t ht_hash_int(const void *key);
-int ht_compare_int(const void *key1, const void *key2);
+    return hash;
+}
+int ht_compare_string(const void *key1, const void *key2)
+{
+    return strcmp((const char *)key1, (const char *)key2);
+}
 
-size_t ht_hash_float(const void *key);
-int ht_compare_float(const void *key1, const void *key2);
+size_t ht_hash_int(const void *key)
+{
+    int int_key = *(const int *)key;
+    // placeholder hash based on FNV-1a - consider murmur later
+    return (size_t)int_key * 2654435761u;
+}
+int ht_compare_int(const void *key1, const void *key2)
+{
+    int int1 = *(const int *)key1;
+    int int2 = *(const int *)key2;
+    return int1 - int2;
+}
+
+// floats are annoying for now
+// size_t ht_hash_float(const void *key);
+// int ht_compare_float(const void *key1, const void *key2);
