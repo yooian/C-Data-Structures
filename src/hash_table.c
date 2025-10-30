@@ -65,6 +65,7 @@ static HashTableEntry *ht_find_slot(HashTable *table, const void *key, HashTable
             return entry;
         }
     }
+    return NULL;
 }
 
 typedef size_t (*HashFunction)(const void *key);
@@ -98,8 +99,8 @@ void ht_destroy(HashTable *table)
 int ht_insert(HashTable *table, void *key, void *value)
 {
     HashTableEntry *entry;
-    HashTableEntry **p_first_tombstone;
-    entry = ht_find_slot(table, key, p_first_tombstone);
+    HashTableEntry *p_first_tombstone = NULL;
+    entry = ht_find_slot(table, key, &p_first_tombstone);
     if (entry->state == SLOT_OCCUPIED)
     {
         entry->value = value;
@@ -107,14 +108,18 @@ int ht_insert(HashTable *table, void *key, void *value)
     }
     else if (entry->state == SLOT_EMPTY || entry->state == SLOT_DELETED)
     {
-        if (*p_first_tombstone != NULL)
+        if (p_first_tombstone != NULL)
         {
-            (*p_first_tombstone)->state = SLOT_OCCUPIED;
-            (*p_first_tombstone)->value = value;
+            p_first_tombstone->state = SLOT_OCCUPIED;
+            p_first_tombstone->key = key;
+            p_first_tombstone->value = value;
+            table->size++;
             return 0;
         }
         entry->state = SLOT_OCCUPIED;
+        entry->key = key;
         entry->value = value;
+        table->size++;
         return 0;
     }
     return -1;
@@ -147,7 +152,7 @@ int ht_delete(HashTable *table, const void *key)
 
     if (entry != NULL && entry->state == SLOT_OCCUPIED)
     {
-        entry->state == SLOT_DELETED;
+        entry->state = SLOT_DELETED;
         return 0;
     }
     return -1;
@@ -160,10 +165,10 @@ size_t ht_hash_string(const void *key)
     unsigned long hash = 5381;
     int c;
     const unsigned char *str = (const unsigned char *)key;
-    while (c = *str++)
+    while ((c = *str++))
         hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
-    return hash;
+    return (size_t)hash;
 }
 int ht_compare_string(const void *key1, const void *key2)
 {
