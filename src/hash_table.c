@@ -68,6 +68,30 @@ static HashTableEntry *ht_find_slot(HashTable *table, const void *key, HashTable
     return NULL;
 }
 
+static int ht_resize(HashTable *table, const size_t new_capacity)
+{
+    HashTableEntry *new_entries = calloc(new_capacity, sizeof(HashTableEntry));
+    HashTableEntry *old_entries = table->entries;
+    size_t *old_capacity = table->capacity;
+
+    table->entries = new_entries;
+    table->capacity = new_capacity;
+    table->size = 0;
+
+    for (int i = 0; i < old_capacity; ++i)
+    {
+        if (old_entries[i].state == SLOT_OCCUPIED)
+        {
+            ht_insert(table, old_entries[i].key, old_entries[i].value);
+            table->size++;
+        }
+    }
+    free(old_entries);
+    return 0;
+}
+
+/* PUBLIC FUNCTIONS */
+
 /** Creates a new empty hash table */
 HashTable *ht_create(size_t capacity, HashFunction hash_fn, CompareFunction comp_fn)
 {
@@ -95,9 +119,15 @@ void ht_destroy(HashTable *table)
  */
 int ht_insert(HashTable *table, void *key, void *value)
 {
+    if (table->size >= table->capacity * MAX_LOAD_FACTOR)
+    {
+        ht_resize(table, table->capacity * 2);
+    }
+
     HashTableEntry *entry;
     HashTableEntry *first_tombstone = NULL;
     entry = ht_find_slot(table, key, &first_tombstone);
+
     if (entry->state == SLOT_OCCUPIED)
     {
         entry->value = value;
