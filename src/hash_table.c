@@ -95,7 +95,30 @@ void ht_destroy(HashTable *table)
  * If the key already exists, the value is updated.
  * Returns 0 on success, non-zero on failure.
  */
-int ht_insert(HashTable *table, void *key, void *value);
+int ht_insert(HashTable *table, void *key, void *value)
+{
+    HashTableEntry *entry;
+    HashTableEntry **p_first_tombstone;
+    entry = ht_find_slot(table, key, p_first_tombstone);
+    if (entry->state == SLOT_OCCUPIED)
+    {
+        entry->value = value;
+        return 0;
+    }
+    else if (entry->state == SLOT_EMPTY || entry->state == SLOT_DELETED)
+    {
+        if (*p_first_tombstone != NULL)
+        {
+            (*p_first_tombstone)->state = SLOT_OCCUPIED;
+            (*p_first_tombstone)->value = value;
+            return 0;
+        }
+        entry->state = SLOT_OCCUPIED;
+        entry->value = value;
+        return 0;
+    }
+    return -1;
+}
 
 /**
  * Searches for a key.
